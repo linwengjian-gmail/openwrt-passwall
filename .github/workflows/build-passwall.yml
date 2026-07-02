@@ -1,0 +1,131 @@
+name: Build Passwall for LEDE R25.10.10 ipq40xx
+
+on:
+  workflow_dispatch:
+    inputs:
+      lede_commit:
+        description: "coolsnowwolf/lede commit or branch"
+        required: true
+        default: "bee33b4"
+      passwall_ref:
+        description: "Openwrt-Passwall/openwrt-passwall ref"
+        required: true
+        default: "main"
+      passwall_packages_ref:
+        description: "Openwrt-Passwall/openwrt-passwall-packages ref"
+        required: true
+        default: "main"
+
+env:
+  TZ: Asia/Shanghai
+  TARGET: ipq40xx
+  SUBTARGET: generic
+  DEVICE: p2w_r619ac-128m
+
+jobs:
+  build:
+    name: Build ipq40xx/generic packages
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android || true
+          df -h
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+            bzip2 ccache clang cmake curl device-tree-compiler ecj fastjar flex gawk gettext \
+            gcc-multilib g++-multilib git gperf haveged help2man intltool libelf-dev \
+            libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev \
+            libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz mkisofs msmtp \
+            ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply \
+            python3-docutils qemu-utils rsync scons squashfs-tools subversion swig texinfo \
+            uglifyjs unzip upx-ucl vim wget xmlto xxd zlib1g-dev
+
+      - name: Clone LEDE source
+        run: |
+          git clone --filter=blob:none https://github.com/coolsnowwolf/lede.git lede
+          cd lede
+          git checkout "${{ inputs.lede_commit }}"
+
+      - name: Add Passwall feeds
+        working-directory: lede
+        run: |
+          cp feeds.conf.default feeds.conf.default.bak
+          {
+            echo "src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;${{ inputs.passwall_packages_ref }}"
+            echo "src-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall.git;${{ inputs.passwall_ref }}"
+            cat feeds.conf.default.bak
+          } > feeds.conf.default
+
+      - name: Cache dl directory
+        uses: actions/cache@v4
+        with:
+          path: lede/dl
+          key: dl-${{ env.TARGET }}-${{ env.SUBTARGET }}-${{ inputs.lede_commit }}-${{ inputs.passwall_ref }}-${{ inputs.passwall_packages_ref }}
+          restore-keys: |
+            dl-${{ env.TARGET }}-${{ env.SUBTARGET }}-${{ inputs.lede_commit }}-
+            dl-${{ env.TARGET }}-${{ env.SUBTARGET }}-
+
+      - name: Update and install feeds
+        working-directory: lede
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Generate target config
+        working-directory: lede
+        run: |
+          cat > .config <<EOF
+          CONFIG_TARGET_${TARGET}=y
+          CONFIG_TARGET_${TARGET}_${SUBTARGET}=y
+          CONFIG_TARGET_${TARGET}_${SUBTARGET}_DEVICE_${DEVICE}=y
+          CONFIG_ALL_KMODS=n
+          CONFIG_ALL_NONSHARED=n
+          CONFIG_AUTOREMOVE=n
+          CONFIG_DEVEL=y
+          CONFIG_CCACHE=y
+          CONFIG_PACKAGE_luci-app-passwall=m
+          CONFIG_LUCI_LANG_zh_Hans=y
+          CONFIG_PACKAGE_luci-app-passwall_Iptables_Transparent_Proxy=y
+          CONFIG_PACKAGE_luci-app-passwall_Nftables_Transparent_Proxy=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Geoview=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Haproxy=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_SingBox=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Xray=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_V2ray_Plugin=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_ShadowsocksR_Libev_Client=y
+          CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Simple_Obfs=y
+          EOF
+          sed -i 's/^[[:space:]]*//' .config
+          make defconfig
+
+      - name: Download package sources
+        working-directory: lede
+        run: |
+          make download -j"$(nproc)" || make download -j1 V=s
+
+      - name: Build Passwall packages
+        working-directory: lede
+        run: |
+          make package/compile -j"$(nproc)" V=s
+
+      - name: Collect ipk artifacts
+        working-directory: lede
+        run: |
+          mkdir -p ../artifact
+          find bin/packages bin/targets -type f \( -name "*passwall*.ipk" -o -name "*xray*.ipk" -o -name "*sing-box*.ipk" -o -name "*chinadns*.ipk" -o -name "*dns2socks*.ipk" -o -name "*ipt2socks*.ipk" -o -name "*microsocks*.ipk" -o -name "*tcping*.ipk" -o -name "*shadowsocks*.ipk" -o -name "*simple-obfs*.ipk" -o -name "*v2ray*.ipk" -o -name "*geoview*.ipk" -o -name "*haproxy*.ipk" \) -exec cp -v {} ../artifact/ \;
+          find ../artifact -type f -maxdepth 1 -print | sort
+          test "$(find ../artifact -type f -name '*.ipk' | wc -l)" -gt 0
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: passwall-lede-r25.10.10-ipq40xx-generic-p2w-r619ac-128m
+          path: artifact/*.ipk
+          if-no-files-found: error
