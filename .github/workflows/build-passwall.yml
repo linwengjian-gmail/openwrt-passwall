@@ -124,12 +124,29 @@ jobs:
       - name: Build Passwall packages
         working-directory: lede
         run: |
-          make package/feeds/passwall_luci/luci-app-passwall/compile -j"$(nproc)" V=s || {
-            echo "::group::Serial rebuild for first real error"
-            make package/feeds/passwall_luci/luci-app-passwall/compile -j1 V=s
-            echo "::endgroup::"
-            exit 1
-          }
+          targets=(
+            package/feeds/passwall_packages/chinadns-ng/compile
+            package/feeds/passwall_packages/dns2socks/compile
+            package/feeds/passwall_packages/ipt2socks/compile
+            package/feeds/passwall_packages/microsocks/compile
+            package/feeds/passwall_packages/tcping/compile
+            package/feeds/passwall_packages/geoview/compile
+            package/feeds/passwall_packages/shadowsocksr-libev/compile
+            package/feeds/passwall_packages/simple-obfs/compile
+            package/feeds/passwall_packages/sing-box/compile
+            package/feeds/passwall_packages/v2ray-plugin/compile
+            package/feeds/passwall_packages/xray-core/compile
+            package/feeds/packages/haproxy/compile
+            package/feeds/passwall_luci/luci-app-passwall/compile
+          )
+          for target in "${targets[@]}"; do
+            make "$target" -j"$(nproc)" V=s || {
+              echo "::group::Serial rebuild for first real error in $target"
+              make "$target" -j1 V=s
+              echo "::endgroup::"
+              exit 1
+            }
+          done
 
       - name: Collect ipk artifacts
         working-directory: lede
