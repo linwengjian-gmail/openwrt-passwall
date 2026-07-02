@@ -116,6 +116,11 @@ jobs:
           make tools/install -j"$(nproc)" V=s
           make toolchain/install -j"$(nproc)" V=s
 
+      - name: Prepare target kernel
+        working-directory: lede
+        run: |
+          make target/linux/prepare -j"$(nproc)" V=s
+
       - name: Build Passwall packages
         working-directory: lede
         run: |
