@@ -119,7 +119,12 @@ jobs:
       - name: Build Passwall packages
         working-directory: lede
         run: |
-          make package/compile -j"$(nproc)" V=s
+          make package/compile -j"$(nproc)" V=s || {
+            echo "::group::Serial rebuild for first real error"
+            make package/compile -j1 V=s
+            echo "::endgroup::"
+            exit 1
+          }
 
       - name: Collect ipk artifacts
         working-directory: lede
