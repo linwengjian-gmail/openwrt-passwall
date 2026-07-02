@@ -116,17 +116,17 @@ jobs:
           make tools/install -j"$(nproc)" V=s
           make toolchain/install -j"$(nproc)" V=s
 
-      - name: Prepare target kernel
+      - name: Build target kernel
         working-directory: lede
         run: |
-          make target/linux/prepare -j"$(nproc)" V=s
+          make target/linux/compile -j"$(nproc)" V=s
 
       - name: Build Passwall packages
         working-directory: lede
         run: |
-          make package/compile -j"$(nproc)" V=s || {
+          make package/feeds/passwall_luci/luci-app-passwall/compile -j"$(nproc)" V=s || {
             echo "::group::Serial rebuild for first real error"
-            make package/compile -j1 V=s
+            make package/feeds/passwall_luci/luci-app-passwall/compile -j1 V=s
             echo "::endgroup::"
             exit 1
           }
