@@ -79,6 +79,12 @@ jobs:
         run: |
           make download -j"$(nproc)" || make download -j1 V=s
 
+      - name: Build host tools and toolchain
+        working-directory: lede
+        run: |
+          make tools/install -j"$(nproc)" V=s
+          make toolchain/install -j"$(nproc)" V=s
+
       - name: Build theme package
         working-directory: lede
         run: |
