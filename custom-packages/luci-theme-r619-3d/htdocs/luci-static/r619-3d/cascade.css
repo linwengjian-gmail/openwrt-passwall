@@ -2,13 +2,13 @@
 
 :root {
 	--r619-bg: #0f1117;
-	--r619-panel: rgba(248, 250, 247, 0.94);
-	--r619-panel-dark: rgba(28, 33, 39, 0.92);
-	--r619-ink: #1b2229;
-	--r619-muted: #6b7480;
-	--r619-line: rgba(33, 46, 57, 0.16);
-	--r619-green: #23c78a;
-	--r619-amber: #e7a642;
+	--r619-panel: rgba(17, 22, 28, 0.94);
+	--r619-panel-dark: rgba(9, 13, 17, 0.95);
+	--r619-ink: #ecf4ef;
+	--r619-muted: #a4b2aa;
+	--r619-line: rgba(123, 255, 203, 0.18);
+	--r619-green: #25f0a6;
+	--r619-amber: #f0b44f;
 	--r619-red: #d94c4c;
 	--r619-blue: #3478c7;
 	--r619-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
@@ -60,7 +60,7 @@ body::before {
 }
 
 a {
-	color: #19765a;
+	color: #70ffd0;
 }
 
 header {
@@ -117,6 +117,7 @@ header .brand::before {
 	position: relative;
 	display: block;
 	margin: 0;
+	perspective: 760px;
 	transform-style: preserve-3d;
 }
 
@@ -129,15 +130,35 @@ header .brand::before {
 	color: rgba(255, 255, 255, 0.82);
 	line-height: 34px;
 	text-decoration: none;
-	transition: color 0.16s ease, background 0.16s ease, transform 0.16s ease, border-color 0.16s ease;
+	transform-style: preserve-3d;
+	backface-visibility: visible;
+	transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
 #topmenu > li:hover > a,
 #topmenu > li.active > a {
 	border-color: rgba(35, 199, 138, 0.34);
-	background: rgba(35, 199, 138, 0.14);
+	background: linear-gradient(135deg, rgba(37, 240, 166, 0.2), rgba(240, 180, 79, 0.13));
 	color: #ffffff;
-	transform: translateY(-1px) rotateX(7deg);
+	box-shadow: 0 0 22px rgba(37, 240, 166, 0.28);
+	animation: r619-menu-spin 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+#topmenu > li > a.r619-spin,
+#modemenu > li > a.r619-spin {
+	animation: r619-menu-spin 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes r619-menu-spin {
+	0% {
+		transform: translateY(0) rotateX(0deg) rotateY(0deg) translateZ(0);
+	}
+	45% {
+		transform: translateY(-3px) rotateX(18deg) rotateY(205deg) translateZ(22px);
+	}
+	100% {
+		transform: translateY(-1px) rotateX(0deg) rotateY(360deg) translateZ(0);
+	}
 }
 
 .dropdown-menu {
@@ -216,11 +237,12 @@ h2[data-r619-title]::before {
 .alert-message,
 .modal,
 .panel {
-	border: 1px solid rgba(255, 255, 255, 0.68);
+	border: 1px solid rgba(123, 255, 203, 0.16);
 	border-radius: var(--r619-radius);
 	background: var(--r619-panel);
 	box-shadow: var(--r619-shadow);
 	transform: translateZ(0);
+	color: var(--r619-ink);
 }
 
 .cbi-map {
@@ -235,6 +257,7 @@ h2[data-r619-title]::before {
 
 .cbi-section-node {
 	box-shadow: none;
+	background: rgba(9, 13, 17, 0.36);
 }
 
 .cbi-section:hover,
@@ -264,12 +287,32 @@ td {
 
 .table .tr:nth-child(odd),
 tr:nth-child(odd) {
-	background: rgba(33, 46, 57, 0.035);
+	background: rgba(255, 255, 255, 0.035);
 }
 
 .table .tr:hover,
 tr:hover {
-	background: rgba(35, 199, 138, 0.07);
+	background: rgba(37, 240, 166, 0.1);
+}
+
+.table .th,
+.table .td,
+th,
+td,
+.cbi-value-title,
+.cbi-value-field,
+.cbi-section-descr,
+.cbi-map-descr,
+.cbi-section-table-descr {
+	color: var(--r619-ink);
+}
+
+.cbi-section-descr,
+.cbi-map-descr,
+.cbi-section-table-descr,
+small,
+.hint {
+	color: var(--r619-muted);
 }
 
 .tabs,
@@ -317,11 +360,11 @@ input,
 select,
 textarea,
 .cbi-dropdown {
-	border: 1px solid rgba(33, 46, 57, 0.2);
+	border: 1px solid rgba(123, 255, 203, 0.24);
 	border-radius: 6px;
-	background: rgba(255, 255, 255, 0.92);
+	background: rgba(5, 8, 11, 0.88);
 	color: var(--r619-ink);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 input:focus,
@@ -337,10 +380,10 @@ textarea:focus,
 .cbi-button,
 button {
 	min-height: 32px;
-	border: 1px solid rgba(33, 46, 57, 0.18);
+	border: 1px solid rgba(123, 255, 203, 0.22);
 	border-radius: 6px;
-	background: linear-gradient(180deg, #ffffff, #edf2ef);
-	color: var(--r619-ink);
+	background: linear-gradient(180deg, rgba(38, 49, 57, 0.98), rgba(16, 22, 27, 0.98));
+	color: #f4fff9;
 	box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
 	transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
@@ -370,18 +413,20 @@ button:hover {
 .alert-message {
 	padding: 12px 14px;
 	border-color: rgba(231, 166, 66, 0.45);
-	background: rgba(255, 250, 237, 0.95);
-	color: #3d3322;
+	background: rgba(42, 34, 18, 0.95);
+	color: #ffe8bd;
 }
 
 .alert-message.error {
 	border-color: rgba(217, 76, 76, 0.5);
-	background: rgba(255, 238, 238, 0.96);
+	background: rgba(50, 19, 21, 0.96);
+	color: #ffd7d7;
 }
 
 .alert-message.success {
 	border-color: rgba(35, 199, 138, 0.48);
-	background: rgba(236, 255, 247, 0.96);
+	background: rgba(13, 45, 33, 0.96);
+	color: #ccffe9;
 }
 
 footer {
@@ -413,11 +458,16 @@ footer a {
 	border-radius: 6px;
 	background: rgba(255, 255, 255, 0.08);
 	color: rgba(255, 255, 255, 0.8);
+	transform-style: preserve-3d;
 }
 
 #modemenu li.active a {
 	background: rgba(35, 199, 138, 0.22);
 	color: #ffffff;
+}
+
+#modemenu li a:hover {
+	animation: r619-menu-spin 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 body.sysauth {

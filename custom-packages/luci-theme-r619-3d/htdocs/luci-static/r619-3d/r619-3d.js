@@ -86,13 +86,26 @@
 			.forEach((node) => node.classList.add('r619-panel'));
 	}
 
+	function wireMenuSpin() {
+		document.querySelectorAll('#topmenu > li > a, #modemenu > li > a')
+			.forEach((link) => {
+				link.addEventListener('click', function() {
+					this.classList.remove('r619-spin');
+					void this.offsetWidth;
+					this.classList.add('r619-spin');
+				}, { passive: true });
+			});
+	}
+
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', function() {
 			createCanvas();
 			markActiveCards();
+			wireMenuSpin();
 		});
 	} else {
 		createCanvas();
 		markActiveCards();
+		wireMenuSpin();
 	}
 })();
