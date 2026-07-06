@@ -6,6 +6,19 @@
 {% include('header', { blank_page: true }) %}
 
 <section hidden>
+	<div class="codex-login-hero">
+		<div class="codex-orb" aria-hidden="true">
+			<span></span>
+			<span></span>
+			<span></span>
+		</div>
+		<div class="codex-login-copy">
+			<div class="codex-kicker">OpenAI Codex style access</div>
+			<div class="codex-title">LEDE Control Console</div>
+			<div class="codex-subtitle">router.login --target ipq40xx --mode secure</div>
+		</div>
+	</div>
+
 	<form method="post" class="cbi-map">
 		<div class="cbi-section">
 			<div class="cbi-section-node">
@@ -25,7 +38,7 @@
 		</div>
 	</form>
 
-	<hr>
+	<hr class="codex-login-rule">
 
 	{% if (fuser): %}
 	<div class="alert-message error">
