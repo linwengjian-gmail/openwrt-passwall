@@ -86,13 +86,20 @@
 			.forEach((node) => node.classList.add('r619-panel'));
 	}
 
-	function wireMenuSpin() {
+	function wireMenuDepth() {
 		document.querySelectorAll('#topmenu > li > a, #modemenu > li > a')
 			.forEach((link) => {
-				link.addEventListener('click', function() {
-					this.classList.remove('r619-spin');
-					void this.offsetWidth;
-					this.classList.add('r619-spin');
+				link.addEventListener('pointermove', function(ev) {
+					const rect = this.getBoundingClientRect();
+					const x = ((ev.clientX - rect.left) / rect.width - 0.5).toFixed(3);
+					const y = ((ev.clientY - rect.top) / rect.height - 0.5).toFixed(3);
+					this.style.setProperty('--r619-mx', x);
+					this.style.setProperty('--r619-my', y);
+				}, { passive: true });
+
+				link.addEventListener('pointerleave', function() {
+					this.style.removeProperty('--r619-mx');
+					this.style.removeProperty('--r619-my');
 				}, { passive: true });
 			});
 	}
@@ -101,11 +108,11 @@
 		document.addEventListener('DOMContentLoaded', function() {
 			createCanvas();
 			markActiveCards();
-			wireMenuSpin();
+			wireMenuDepth();
 		});
 	} else {
 		createCanvas();
 		markActiveCards();
-		wireMenuSpin();
+		wireMenuDepth();
 	}
 })();

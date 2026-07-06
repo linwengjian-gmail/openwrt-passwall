@@ -29,7 +29,7 @@ html {
 
 body {
 	min-height: 100vh;
-	padding-left: 246px;
+	padding-left: 286px;
 	background:
 		radial-gradient(circle at 14% 12%, rgba(35, 199, 138, 0.18), transparent 28rem),
 		radial-gradient(circle at 84% 24%, rgba(231, 166, 66, 0.16), transparent 24rem),
@@ -74,7 +74,7 @@ header {
 	flex-direction: column;
 	align-items: center;
 	gap: 14px;
-	width: 214px;
+	width: 238px;
 	min-height: 0;
 	padding: 14px 10px;
 	border: 1px solid rgba(123, 255, 203, 0.16);
@@ -138,7 +138,7 @@ header .brand::before {
 	min-height: 0;
 	margin: 0;
 	padding: 2px 2px 8px;
-	overflow-x: visible;
+	overflow-x: hidden;
 	overflow-y: auto;
 	white-space: normal;
 	scrollbar-width: thin;
@@ -149,7 +149,7 @@ header .brand::before {
 	position: relative;
 	display: block;
 	margin: 0;
-	perspective: 920px;
+	perspective: 1100px;
 	transform-style: preserve-3d;
 }
 
@@ -167,7 +167,12 @@ header .brand::before {
 	text-decoration: none;
 	transform-style: preserve-3d;
 	backface-visibility: visible;
-	transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+	transform:
+		perspective(900px)
+		rotateX(calc(var(--r619-my, 0) * -6deg))
+		rotateY(calc(var(--r619-mx, 0) * 10deg))
+		translateZ(0);
+	transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
 
 #topmenu > li > a::before {
@@ -194,29 +199,17 @@ header .brand::before {
 	background: linear-gradient(135deg, rgba(37, 240, 166, 0.28), rgba(240, 180, 79, 0.16));
 	color: #ffffff !important;
 	box-shadow: 0 0 28px rgba(37, 240, 166, 0.36), 0 18px 28px rgba(0, 0, 0, 0.28);
-	animation: r619-menu-spin 0.92s cubic-bezier(0.16, 0.8, 0.18, 1) both;
+	transform:
+		perspective(900px)
+		rotateX(calc(var(--r619-my, 0) * -6deg))
+		rotateY(calc(var(--r619-mx, 0) * 10deg - 8deg))
+		translateX(5px)
+		translateZ(16px);
 }
 
 #topmenu > li:hover > a::before,
 #topmenu > li.active > a::before {
 	animation: r619-menu-scan 0.74s ease-out both;
-}
-
-#topmenu > li > a.r619-spin,
-#modemenu > li > a.r619-spin {
-	animation: r619-menu-spin 0.92s cubic-bezier(0.16, 0.8, 0.18, 1) both;
-}
-
-@keyframes r619-menu-spin {
-	0% {
-		transform: translateY(0) rotateX(0deg) rotateY(0deg) translateZ(0);
-	}
-	45% {
-		transform: translateY(-3px) rotateX(18deg) rotateY(205deg) translateZ(22px);
-	}
-	100% {
-		transform: translateY(-1px) rotateX(0deg) rotateY(360deg) translateZ(0);
-	}
 }
 
 @keyframes r619-menu-scan {
@@ -229,24 +222,55 @@ header .brand::before {
 }
 
 .dropdown-menu {
-	top: 0;
-	left: calc(100% + 10px);
-	min-width: 190px;
-	padding: 7px;
-	border: 1px solid rgba(255, 255, 255, 0.14);
-	border-radius: var(--r619-radius);
-	background: rgba(23, 29, 36, 0.96);
-	box-shadow: var(--r619-shadow);
+	position: static !important;
+	display: none;
+	float: none;
+	min-width: 0;
+	width: auto;
+	margin: 7px 0 2px 14px;
+	padding: 7px 0 7px 10px;
+	border: 0;
+	border-left: 1px solid rgba(37, 240, 166, 0.34);
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	opacity: 1;
+	transform: none;
 }
 
 .dropdown-menu a {
+	display: block;
+	min-height: 30px;
+	padding: 0 10px;
 	border-radius: 6px;
-	color: rgba(255, 255, 255, 0.82);
+	background: rgba(255, 255, 255, 0.045);
+	color: rgba(246, 255, 250, 0.86) !important;
+	line-height: 30px;
+	text-decoration: none;
 }
 
 .dropdown-menu a:hover {
-	background: rgba(231, 166, 66, 0.16);
-	color: #ffffff;
+	background: linear-gradient(90deg, rgba(37, 240, 166, 0.22), rgba(240, 180, 79, 0.09));
+	color: #ffffff !important;
+	box-shadow: inset 2px 0 0 rgba(37, 240, 166, 0.8), 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+#topmenu > li:hover > .dropdown-menu,
+#topmenu > li:focus-within > .dropdown-menu,
+#topmenu > li.active > .dropdown-menu {
+	display: block;
+	animation: r619-submenu-in 0.2s ease-out both;
+}
+
+@keyframes r619-submenu-in {
+	from {
+		opacity: 0;
+		transform: translateY(-4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 #indicators {
@@ -257,7 +281,7 @@ header .brand::before {
 }
 
 #maincontent.container {
-	width: min(1360px, calc(100vw - 286px));
+	width: min(1360px, calc(100vw - 312px));
 	margin: 24px 24px 34px;
 	padding: 0;
 	perspective: 1400px;
@@ -518,7 +542,7 @@ footer {
 	gap: 14px;
 	min-height: 44px;
 	padding: 0 22px 18px;
-	margin-left: 246px;
+	margin-left: 286px;
 	color: rgba(255, 255, 255, 0.68);
 }
 
@@ -548,7 +572,9 @@ footer a {
 }
 
 #modemenu li a:hover {
-	animation: r619-menu-spin 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	background: rgba(37, 240, 166, 0.24);
+	color: #ffffff;
+	transform: translateY(-1px);
 }
 
 body.sysauth {
