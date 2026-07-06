@@ -60,4 +60,36 @@
 		margin-top: 10px;
 		overflow-x: auto;
 	}
+
+	body.sysauth {
+		overflow: auto;
+	}
+
+	body.sysauth .modal.login {
+		width: calc(100vw - 20px);
+		transform: none;
+	}
+
+	.codex-login-hero {
+		grid-template-columns: 62px 1fr;
+		gap: 12px;
+	}
+
+	.codex-orb {
+		width: 56px;
+		height: 56px;
+		border-radius: 14px;
+	}
+
+	.codex-title {
+		font-size: 22px;
+	}
+
+	.codex-subtitle {
+		font-size: 11px;
+	}
+
+	.codex-hud {
+		display: none;
+	}
 }
