@@ -1,0 +1,26 @@
+#!/bin/sh
+
+changed=0
+
+set_opt() {
+	local key=$1
+	local val=$2
+
+	if ! uci -q get "luci.$key" >/dev/null 2>&1; then
+		uci set "luci.$key=$val"
+		changed=1
+	fi
+}
+
+set_opt themes.R6193D /luci-static/r619-3d
+
+if [ "$PKG_UPGRADE" != 1 ]; then
+	uci set luci.main.mediaurlbase=/luci-static/r619-3d
+	changed=1
+fi
+
+if [ "$changed" = 1 ]; then
+	uci commit luci
+fi
+
+exit 0

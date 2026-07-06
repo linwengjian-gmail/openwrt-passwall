@@ -1,0 +1,55 @@
+@import url("/luci-static/bootstrap/mobile.css");
+
+@media screen and (max-width: 854px) {
+	header {
+		position: relative;
+		display: block;
+		min-height: auto;
+		padding: 10px 12px;
+	}
+
+	header .brand {
+		display: block;
+		line-height: 30px;
+	}
+
+	#topmenu {
+		display: flex !important;
+		overflow-x: auto;
+		gap: 6px;
+		padding: 8px 0 2px;
+	}
+
+	#topmenu > li > a {
+		min-height: 30px;
+		padding: 0 10px;
+		line-height: 30px;
+	}
+
+	#maincontent.container {
+		width: calc(100vw - 18px);
+		margin: 12px auto 20px;
+	}
+
+	.cbi-map,
+	.cbi-section,
+	.cbi-section-node {
+		padding: 10px;
+	}
+
+	.tabs,
+	.cbi-tabmenu {
+		overflow-x: auto;
+		flex-wrap: nowrap;
+	}
+
+	footer {
+		display: block;
+		padding: 0 12px 16px;
+	}
+
+	#modemenu {
+		margin-top: 10px;
+		overflow-x: auto;
+	}
+}

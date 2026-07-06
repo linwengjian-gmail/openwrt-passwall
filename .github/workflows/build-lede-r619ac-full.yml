@@ -29,6 +29,9 @@ jobs:
     timeout-minutes: 360
 
     steps:
+      - name: Checkout custom packages
+        uses: actions/checkout@v4
+
       - name: Free disk space
         run: |
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/lib/android || true
@@ -79,6 +82,11 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      - name: Install custom R619 3D theme package
+        run: |
+          mkdir -p lede/package/custom
+          cp -a custom-packages/luci-theme-r619-3d lede/package/custom/
+
       - name: Generate firmware config
         working-directory: lede
         run: |
@@ -97,6 +105,7 @@ jobs:
           CONFIG_LUCI_LANG_zh_Hans=y
           CONFIG_PACKAGE_luci-compat=y
           CONFIG_PACKAGE_luci-theme-argon=y
+          CONFIG_PACKAGE_luci-theme-r619-3d=y
           CONFIG_PACKAGE_luci-app-opkg=y
 
           CONFIG_PACKAGE_luci-app-passwall=y

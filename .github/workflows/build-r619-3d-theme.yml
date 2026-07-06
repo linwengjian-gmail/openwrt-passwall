@@ -1,0 +1,100 @@
+name: Build R619 3D LuCI theme
+
+on:
+  workflow_dispatch:
+    inputs:
+      lede_ref:
+        description: "coolsnowwolf/lede commit or branch"
+        required: true
+        default: "a11e66ca74a2d00fb8c6e950f43a4d05b4433559"
+
+env:
+  TZ: Asia/Shanghai
+  TARGET: ipq40xx
+  SUBTARGET: generic
+  DEVICE: p2w_r619ac-128m
+
+jobs:
+  build:
+    name: Build theme ipk
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout custom theme
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+            bzip2 ccache clang cmake curl device-tree-compiler ecj fastjar flex gawk gettext \
+            gcc-multilib g++-multilib git gperf haveged help2man intltool libelf-dev \
+            libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev \
+            libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz mkisofs msmtp \
+            ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply \
+            python3-docutils qemu-utils rsync scons squashfs-tools subversion swig texinfo \
+            uglifyjs unzip upx-ucl vim wget xmlto xxd zlib1g-dev
+
+      - name: Clone LEDE source
+        run: |
+          git clone --filter=blob:none https://github.com/coolsnowwolf/lede.git lede
+          cd lede
+          git checkout "${{ inputs.lede_ref }}"
+
+      - name: Update and install feeds
+        working-directory: lede
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Install custom theme package
+        run: |
+          mkdir -p lede/package/custom
+          cp -a custom-packages/luci-theme-r619-3d lede/package/custom/
+
+      - name: Generate package config
+        working-directory: lede
+        run: |
+          cat > .config <<EOF
+          CONFIG_TARGET_${TARGET}=y
+          CONFIG_TARGET_${TARGET}_${SUBTARGET}=y
+          CONFIG_TARGET_${TARGET}_${SUBTARGET}_DEVICE_${DEVICE}=y
+          CONFIG_ALL_KMODS=n
+          CONFIG_ALL_NONSHARED=n
+          CONFIG_AUTOREMOVE=n
+          CONFIG_DEVEL=y
+          CONFIG_CCACHE=y
+          CONFIG_PACKAGE_luci-base=y
+          CONFIG_PACKAGE_luci-theme-bootstrap=y
+          CONFIG_PACKAGE_luci-theme-r619-3d=m
+          EOF
+          sed -i 's/^[[:space:]]*//' .config
+          make defconfig
+          grep -E 'CONFIG_PACKAGE_luci-theme-(bootstrap|r619-3d)' .config
+
+      - name: Download sources
+        working-directory: lede
+        run: |
+          make download -j"$(nproc)" || make download -j1 V=s
+
+      - name: Build theme package
+        working-directory: lede
+        run: |
+          make package/custom/luci-theme-r619-3d/compile -j"$(nproc)" V=s || make package/custom/luci-theme-r619-3d/compile -j1 V=s
+
+      - name: Collect theme artifact
+        working-directory: lede
+        run: |
+          mkdir -p ../artifact
+          find bin/packages bin/targets -type f -name "luci-theme-r619-3d*.ipk" -exec cp -v {} ../artifact/ \;
+          find ../artifact -type f -maxdepth 1 -print | sort
+          test "$(find ../artifact -type f -name 'luci-theme-r619-3d*.ipk' | wc -l)" -gt 0
+
+      - name: Upload theme ipk
+        uses: actions/upload-artifact@v4
+        with:
+          name: luci-theme-r619-3d-ipq40xx
+          path: artifact/*.ipk
+          if-no-files-found: error
