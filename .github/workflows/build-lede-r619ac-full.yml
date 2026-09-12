@@ -1,4 +1,4 @@
-name: Build LEDE full firmware for P&W R619AC 128M
+name: Build latest LEDE full firmware for P&W R619AC 128M (USB-SCSI)
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
       lede_ref:
         description: "coolsnowwolf/lede commit or branch"
         required: true
-        default: "a11e66ca74a2d00fb8c6e950f43a4d05b4433559"
+        default: "9f26e6205218dbb353a070b8deddf35ae4075c5c"
       passwall_ref:
         description: "Openwrt-Passwall/openwrt-passwall ref"
         required: true
@@ -106,7 +106,26 @@ jobs:
           CONFIG_PACKAGE_luci-compat=y
           CONFIG_PACKAGE_luci-theme-argon=y
           CONFIG_PACKAGE_luci-theme-r619-3d=y
-          CONFIG_PACKAGE_luci-app-opkg=y
+          CONFIG_PACKAGE_luci-app-package-manager=y
+          CONFIG_PACKAGE_luci-app-firewall=y
+
+          # USB mass-storage / SCSI support.  These are selected as firmware
+          # packages so the matching kernel modules and symbol tables ship
+          # together with the sysupgrade image.
+          CONFIG_PACKAGE_kmod-scsi-core=y
+          CONFIG_PACKAGE_kmod-scsi-generic=y
+          CONFIG_PACKAGE_kmod-usb-storage=y
+          CONFIG_PACKAGE_kmod-usb-storage-uas=y
+          CONFIG_PACKAGE_kmod-usb-storage-extras=y
+          CONFIG_PACKAGE_kmod-fs-ext4=y
+          CONFIG_PACKAGE_kmod-fs-vfat=y
+          CONFIG_PACKAGE_kmod-fs-exfat=y
+          CONFIG_PACKAGE_kmod-fs-ntfs3=y
+          CONFIG_PACKAGE_kmod-nls-cp437=y
+          CONFIG_PACKAGE_kmod-nls-iso8859-1=y
+          CONFIG_PACKAGE_kmod-nls-utf8=y
+          CONFIG_PACKAGE_block-mount=y
+          CONFIG_PACKAGE_mount-utils=y
 
           CONFIG_PACKAGE_luci-app-passwall=y
           CONFIG_PACKAGE_luci-app-passwall_Iptables_Transparent_Proxy=y
@@ -149,14 +168,118 @@ jobs:
           CONFIG_PACKAGE_luci-app-autoreboot=y
           CONFIG_PACKAGE_luci-app-wechatpush=y
           CONFIG_PACKAGE_luci-app-uugamebooster=y
+
+          # PassWall runtime packages present on the current R619AC.
+          CONFIG_PACKAGE_chinadns-ng=y
+          CONFIG_PACKAGE_dns2socks=y
+          CONFIG_PACKAGE_ipt2socks=y
+          CONFIG_PACKAGE_microsocks=y
+          CONFIG_PACKAGE_tcping=y
+          CONFIG_PACKAGE_geoview=y
+          CONFIG_PACKAGE_haproxy=y
+          CONFIG_PACKAGE_shadowsocksr-libev-ssr-local=y
+          CONFIG_PACKAGE_shadowsocksr-libev-ssr-redir=y
+          CONFIG_PACKAGE_simple-obfs=y
+          CONFIG_PACKAGE_sing-box=y
+          CONFIG_PACKAGE_v2ray-geodata=y
+          CONFIG_PACKAGE_v2ray-plugin=y
+          CONFIG_PACKAGE_xray-core=y
+
+          # Runtime daemons used by the existing LuCI functions.
+          CONFIG_PACKAGE_frpc=y
+          CONFIG_PACKAGE_frps=y
+          CONFIG_PACKAGE_adguardhome=y
+          CONFIG_PACKAGE_appfilter=y
+          CONFIG_PACKAGE_tor=y
+          CONFIG_PACKAGE_tor-hs=y
+          CONFIG_PACKAGE_nlbwmon=y
+          CONFIG_PACKAGE_vlmcsd=y
+          CONFIG_PACKAGE_transmission-cli=y
+          CONFIG_PACKAGE_transmission-daemon=y
+          CONFIG_PACKAGE_transmission-remote=y
+          CONFIG_PACKAGE_transmission-web-control=y
+          CONFIG_PACKAGE_miniupnpd-iptables=y
+          CONFIG_PACKAGE_samba36-server=y
+          CONFIG_PACKAGE_vsftpd=y
+          CONFIG_PACKAGE_mwan3=y
+          CONFIG_PACKAGE_syncdial=y
+          CONFIG_PACKAGE_uugamebooster=y
+          CONFIG_PACKAGE_zerotier=y
+          CONFIG_PACKAGE_cjdns=y
+          CONFIG_PACKAGE_strongswan=y
+          CONFIG_PACKAGE_strongswan-charon=y
+          CONFIG_PACKAGE_strongswan-ipsec=y
+          CONFIG_PACKAGE_strongswan-minimal=y
+          CONFIG_PACKAGE_openvpn-openssl=y
+          CONFIG_PACKAGE_openvpn-easy-rsa=y
+          CONFIG_PACKAGE_ddns-scripts=y
+          CONFIG_PACKAGE_ddns-scripts-services=y
+          CONFIG_PACKAGE_ddns-scripts-cloudflare=y
+          CONFIG_PACKAGE_ddns-scripts_dnspod=y
           EOF
           sed -i 's/^[[:space:]]*//' .config
           make defconfig
 
+      - name: Verify required feature selection
+        working-directory: lede
+        run: |
+          set -eu
+          missing=0
+          while IFS= read -r symbol; do
+            [ -z "$symbol" ] && continue
+            if ! grep -qx "$symbol" .config; then
+              echo "MISSING_REQUIRED: $symbol"
+              missing=1
+            fi
+          done <<'REQUIRED'
+          CONFIG_TARGET_ipq40xx=y
+          CONFIG_TARGET_ipq40xx_generic=y
+          CONFIG_TARGET_ipq40xx_generic_DEVICE_p2w_r619ac-128m=y
+          CONFIG_PACKAGE_luci-app-passwall=y
+          CONFIG_PACKAGE_luci-app-frpc=y
+          CONFIG_PACKAGE_luci-app-frps=y
+          CONFIG_PACKAGE_luci-app-ddns=y
+          CONFIG_PACKAGE_luci-app-ipsec-vpnd=y
+          CONFIG_PACKAGE_luci-app-openvpn-server=y
+          CONFIG_PACKAGE_luci-app-zerotier=y
+          CONFIG_PACKAGE_luci-app-adguardhome=y
+          CONFIG_PACKAGE_luci-app-appfilter=y
+          CONFIG_PACKAGE_luci-app-samba=y
+          CONFIG_PACKAGE_luci-app-vsftpd=y
+          CONFIG_PACKAGE_luci-app-transmission=y
+          CONFIG_PACKAGE_luci-app-upnp=y
+          CONFIG_PACKAGE_luci-app-mwan3=y
+          CONFIG_PACKAGE_luci-app-syncdial=y
+          CONFIG_PACKAGE_luci-app-turboacc=y
+          CONFIG_PACKAGE_luci-app-wechatpush=y
+          CONFIG_PACKAGE_luci-app-uugamebooster=y
+          CONFIG_PACKAGE_luci-theme-r619-3d=y
+          CONFIG_PACKAGE_kmod-scsi-core=y
+          CONFIG_PACKAGE_kmod-usb-storage=y
+          CONFIG_PACKAGE_kmod-usb-storage-uas=y
+          CONFIG_PACKAGE_kmod-fs-ext4=y
+          CONFIG_PACKAGE_kmod-fs-vfat=y
+          CONFIG_PACKAGE_kmod-fs-ntfs3=y
+          CONFIG_PACKAGE_sing-box=y
+          CONFIG_PACKAGE_xray-core=y
+          CONFIG_PACKAGE_haproxy=y
+          CONFIG_PACKAGE_strongswan=y
+          CONFIG_PACKAGE_openvpn-openssl=y
+          CONFIG_PACKAGE_zerotier=y
+          CONFIG_PACKAGE_samba36-server=y
+          CONFIG_PACKAGE_vsftpd=y
+          CONFIG_PACKAGE_adguardhome=y
+          CONFIG_PACKAGE_uugamebooster=y
+          REQUIRED
+          if [ "$missing" -ne 0 ]; then
+            echo 'One or more required packages were dropped by make defconfig.'
+            exit 1
+          fi
+
       - name: Show selected config
         working-directory: lede
         run: |
-          grep -E 'CONFIG_TARGET_|CONFIG_PACKAGE_(luci-app|ddns|sing-box|xray|zerotier|frpc|frps|openvpn|strongswan|adguardhome|appfilter|tor|nlbwmon|vlmcsd|transmission|miniupnpd|samba|vsftpd|mwan3|syncdial|wechatpush|uugamebooster|TURBOACC)' .config | sort || true
+          grep -E 'CONFIG_TARGET_|CONFIG_PACKAGE_(luci-app|kmod-(scsi|usb-storage|fs-(ext4|vfat|exfat|ntfs3)|nls)|ddns|sing-box|xray|zerotier|frpc|frps|openvpn|strongswan|adguardhome|appfilter|tor|nlbwmon|vlmcsd|transmission|miniupnpd|samba|vsftpd|mwan3|syncdial|wechatpush|uugamebooster|TURBOACC)' .config | sort || true
 
       - name: Download sources
         working-directory: lede
@@ -180,6 +303,6 @@ jobs:
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: lede-r25-full-ipq40xx-generic-p2w-r619ac-128m
+          name: lede-latest-usb-scsi-full-ipq40xx-generic-p2w-r619ac-128m
           path: artifact/*
           if-no-files-found: error
