@@ -82,6 +82,17 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      - name: Patch cjdns for Python 3.11 build host
+        run: |
+          set -eu
+          # cjdns 21.1 bundles an old GYP which imports collections.MutableSet.
+          # Ubuntu 22.04's Python 3.11 moved that type to collections.abc.
+          # Install the small compatibility patch before OpenWrt prepares the
+          # package source; no runtime code or router configuration is changed.
+          mkdir -p lede/feeds/routing/cjdns/patches
+          cp patches/cjdns/100-python311-gyp.patch lede/feeds/routing/cjdns/patches/
+          test -s lede/feeds/routing/cjdns/patches/100-python311-gyp.patch
+
       - name: Install custom R619 3D theme package
         run: |
           mkdir -p lede/package/custom
